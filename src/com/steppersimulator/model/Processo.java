@@ -25,6 +25,15 @@ public class Processo implements Cloneable{
 		return String.format("Id(%d), Prioridade(%d), TempodeChegada(%d), tempodeExecução(%d)", getId(), getPrioridade(), getTempoDeChegada(), getTempoDeExeculcao());
 	}
 	
+	@Override
+	public boolean equals(Object arg0) {
+		if(!super.equals(arg0)) return false;
+		
+		Processo other = (Processo) arg0;
+		
+		return this.id == other.getId();
+	}
+	
 	public int getId() {
 		return id;
 	}

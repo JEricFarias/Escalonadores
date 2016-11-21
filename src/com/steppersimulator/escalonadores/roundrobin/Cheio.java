@@ -38,12 +38,24 @@ class Cheio implements State{
 	}
 
 	private void execultarProcesso(Processo processo, int timeSlice){
-		TimeSlice ts = new TimeSlice();
+	//  executa o processo
 		processo.setTempoDeExeculcao(processo.getTempoDeExeculcao() - timeSlice);
 		roundRobin.setTempoTotal(roundRobin.getTempoTotal() + timeSlice);
-		ts.setProcessso(processo);
-		ts.setTime(timeSlice);
-		roundRobin.getTimeSlicesProcessados().add(ts);
+			
+		// Pega o ultimo timeslicePorcessado
+		TimeSlice ultimoProcessado = null;
+		if(!roundRobin.getTimeSlicesProcessados().isEmpty()){
+			ultimoProcessado = roundRobin.getTimeSlicesProcessados().get(roundRobin.getTimeSlicesProcessados().size() -1);
+		}
+	
+		if(ultimoProcessado != null && processo.equals(ultimoProcessado.getProcessso())){
+			ultimoProcessado.setTime(ultimoProcessado.getTime() + timeSlice);
+		}else{
+			TimeSlice ts = new TimeSlice();
+			ts.setProcessso(processo);
+			ts.setTime(timeSlice);
+			roundRobin.getTimeSlicesProcessados().add(ts);
+		}
 	}
 	
 	@Override

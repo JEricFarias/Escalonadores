@@ -62,6 +62,18 @@ public class Fifo implements Escalonador{
 		}
 	}
 	
+	private void ordena(){
+		for(int i = 0; i < processos.size() - 1; i++){
+			for(int j = 1; j < processos.size(); j++ ){
+				if(processos.get(i).getTempoDeChegada() > processos.get(j).getTempoDeChegada()){
+					Processo aux = processos.get(i);
+					processos.add(i, processos.get(j));
+					processos.add(j, aux);
+				}
+			}
+		}
+	}
+	
 	private void ordenarProcessos(){
 		for(int i = 1; i < processos.size(); i++){
 			int w = i;
