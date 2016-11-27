@@ -54,6 +54,7 @@ class Cheio implements State{
 			TimeSlice ts = new TimeSlice();
 			ts.setProcessso(processo);
 			ts.setTime(timeSlice);
+			ts.setInicioDaExecucao(roundRobin.getTempoTotal() - timeSlice);
 			roundRobin.getTimeSlicesProcessados().add(ts);
 		}
 	}

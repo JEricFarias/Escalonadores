@@ -3,6 +3,8 @@ package com.steppersimulator.escalonadores.shortestjobfirst;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import com.steppersimulator.comparators.ComparadorChegadaDePorcessos;
+import com.steppersimulator.comparators.ComparadorTempoExecucaoDePorcessos;
 import com.steppersimulator.escalonadores.Escalonador;
 import com.steppersimulator.model.Processo;
 import com.steppersimulator.model.TimeSlice;
@@ -12,69 +14,75 @@ public class ShortestJobFirst implements Escalonador{
 	private final int ZERAR = 0;
 	private ArrayList<TimeSlice> timeSlicesProcessados;
 	private LinkedList<Processo> processos;
+	private LinkedList<Processo> fila;
+	private Processo processoDaVez;
 	private int tempoTotal;
 	private int tempodeTorca;
 	
 	public ShortestJobFirst() {
 		this.timeSlicesProcessados = new ArrayList<>();
+		this.fila = new LinkedList<>();
 		this.processos = new LinkedList<>();
 	}
 	
 	@Override
 	public ArrayList<TimeSlice> escalonar(ArrayList<Processo> processos, int timeSlice, int tempodeTroca) {
 		clonarProcessos(processos);
-		ordenarProcessos();
+		ordenarProcessosChegada();
 		this.tempodeTorca = tempodeTroca;
-		this.tempoTotal += processos.get(0).getTempoDeChegada();
 		while(!this.processos.isEmpty()){
-			executar();
-			trocar();
+			this.processoDaVez = this.processos.removeFirst();
+			this.tempoTotal = this.processoDaVez.getTempoDeChegada();
+			while(!this.fila.isEmpty() || processoDaVez.getTempoDeExeculcao() > 0){
+				executar();
+				verificarChegadaDeProcesso();
+				trocar();
+			}
 		}
 		
 		return this.timeSlicesProcessados;
 	}
 	
 	private void trocar(){
-		if(processos.getFirst().getTempoDeChegada() > tempoTotal + tempodeTorca){
-			tempoTotal = processos.getFirst().getTempoDeChegada(); 
-		}else{
+		if(!this.fila.isEmpty()){
+			processoDaVez = fila.removeFirst();
 			this.tempoTotal += this.tempodeTorca;
-		}		
+		}	
+	}
+	
+	private void verificarChegadaDeProcesso(){
+		boolean chegoProcesso = false;
+		while(!this.processos.isEmpty() && this.processos.getFirst().getTempoDeChegada() <= this.tempoTotal){
+			this.fila.add(this.processos.removeFirst());
+			chegoProcesso = true;
+		}
+		if(chegoProcesso){
+			ordenaProcessosTempo();
+		}
 	}
 	
 	private void executar(){
 		TimeSlice ts = new TimeSlice();
-		Processo processo = this.processos.removeFirst();
-		this.tempoTotal += processo.getTempoDeExeculcao();
-		ts.setProcessso(processo);
-		ts.setTime(processo.getTempoDeExeculcao());
-		processo.setTempoDeExeculcao(ZERAR);
+		ts.setInicioDaExecucao(tempoTotal);
+		this.tempoTotal += processoDaVez.getTempoDeExeculcao();
+		ts.setProcessso(processoDaVez);
+		ts.setTime(processoDaVez.getTempoDeExeculcao());
+		processoDaVez.setTempoDeExeculcao(ZERAR);
 		this.timeSlicesProcessados.add(ts);
 	}
 	
 	private void clonarProcessos(ArrayList<Processo> processos){
 		for(Processo p: processos){
-			try {
-				this.processos.add(p.clone());
-			} catch (CloneNotSupportedException e) {
-				e.printStackTrace();
-			}
+			this.processos.add(p.clone());
 		}
 	}
 	
-	private void ordenarProcessos(){
-		for(int i = 1; i < processos.size(); i++){
-			int w = i;
-			for(int j = i - 1; j >= 0; j--){
-				Processo processoTemp = null;
-				if(processos.get(w).getTempoDeExeculcao() < processos.get(j).getTempoDeExeculcao()){
-					processoTemp = processos.get(w);
-					processos.set(w, processos.get(j));
-					processos.set(j, processoTemp);
-					w--;
-				}
-			}
-		}
+	private void ordenarProcessosChegada(){
+		this.processos.sort(new ComparadorChegadaDePorcessos());
+	}
+	
+	private void ordenaProcessosTempo(){
+		this.fila.sort(new ComparadorTempoExecucaoDePorcessos());
 	}
 	
 

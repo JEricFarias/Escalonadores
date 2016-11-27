@@ -16,8 +16,12 @@ public class Processo implements Cloneable{
 	}
 	
 	@Override
-	public Processo clone() throws CloneNotSupportedException{
-		return (Processo) super.clone();
+	public Processo clone(){
+		try {
+			return (Processo) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
 	}
 	
 	@Override

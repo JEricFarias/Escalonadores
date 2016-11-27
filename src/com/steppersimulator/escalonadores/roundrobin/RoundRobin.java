@@ -3,6 +3,7 @@ package com.steppersimulator.escalonadores.roundrobin;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import com.steppersimulator.comparators.ComparadorChegadaDePorcessos;
 import com.steppersimulator.escalonadores.Escalonador;
 import com.steppersimulator.model.Processo;
 import com.steppersimulator.model.TimeSlice;
@@ -47,11 +48,13 @@ public class RoundRobin implements Escalonador{
 			this.processodaVez = this.getPorcessos().removeFirst();
 			this.tempoTotal = processodaVez.getTempoDeChegada();
 			
-			while(processodaVez.getTempoDeExeculcao() > 0 || !fila.isEmpty()){			
+			while(processodaVez.getTempoDeExeculcao() > 0 ){			
 				executarProcesso();
 				verificarChegadadeProcesso();
 				troca();
 			}
+			
+			
 		}
 		return timeSlicesProcessados;
 	}
@@ -71,27 +74,12 @@ public class RoundRobin implements Escalonador{
 	
 	private void clonarProcessos(ArrayList<Processo> processos){
 		for(Processo p: processos){
-			try {
-				this.processos.add(p.clone());
-			} catch (CloneNotSupportedException e) {
-				e.printStackTrace();
-			}
+			this.processos.add(p.clone());
 		}
 	}
 	
 	private void ordenarProcessos(){
-		for(int i = 1; i < processos.size(); i++){
-			int w = i;
-			for(int j = i - 1; j >= 0; j--){
-				Processo processoTemp = null;
-				if(processos.get(w).getTempoDeChegada() < processos.get(j).getTempoDeChegada()){
-					processoTemp = processos.get(w);
-					processos.set(w, processos.get(j));
-					processos.set(j, processoTemp);
-					w--;
-				}
-			}
-		}
+		this.processos.sort(new ComparadorChegadaDePorcessos());
 	}
 
 	
