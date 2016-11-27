@@ -23,5 +23,6 @@ public class TesteEscalonamentoProPrioridade {
 			System.out.println(p);
 		}
 		
+		System.out.println("Tempo Total: " + epp.getTempoTotal() + " ut");
 	}
 }

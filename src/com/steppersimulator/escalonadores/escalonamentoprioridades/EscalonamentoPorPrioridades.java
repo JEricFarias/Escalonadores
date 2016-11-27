@@ -30,11 +30,11 @@ public class EscalonamentoPorPrioridades implements Escalonador{
 		while(!this.processos.isEmpty()){
 			this.processoDaVez = this.processos.remove(0);
 			this.tempoTotal = this.processoDaVez.getTempoDeChegada();
-			verificarChegadaPorcesso();
 			while(this.processoDaVez.getTempoDeExeculcao() > 0 || !this.fila.isEmpty()){				
 				if(this.processoDaVez.getTempoDeExeculcao() > 0){
 					executar();
 					verificarChegadaPorcesso();
+					trocar();
 				}else{
 					trocar();
 				}
@@ -45,11 +45,10 @@ public class EscalonamentoPorPrioridades implements Escalonador{
 	
 	private void executar(){
 		processoDaVez.setTempoDeExeculcao(processoDaVez.getTempoDeExeculcao() - UNIDADE_DE_TEMPO);
-		tempoTotal += UNIDADE_DE_TEMPO;
 			
-		// Pega o ultimo timeslicePorcessado
 		TimeSlice ultimoProcessado = null;
 		if(!timeSlices.isEmpty()){
+			// pega o ultimo TimeSlice
 			ultimoProcessado = timeSlices.get(timeSlices.size() - 1);
 		}
 	
@@ -62,19 +61,14 @@ public class EscalonamentoPorPrioridades implements Escalonador{
 			ts.setInicioDaExecucao(this.tempoTotal);
 			this.timeSlices.add(ts);
 		}
+		tempoTotal += UNIDADE_DE_TEMPO;
 	}
 	
 	private void verificarChegadaPorcesso(){
 		boolean chegoProcessos = false;
 		
 		while(!this.processos.isEmpty() && this.processos.get(0).getTempoDeChegada() <= tempoTotal){
-			if(this.processos.get(0).getPrioridade() > this.processoDaVez.getPrioridade()){
-				this.fila.add(this.processoDaVez);
-				this.processoDaVez = this.processos.remove(0);
-				this.tempoTotal += this.tempodeTroca;
-			}else{
-				this.fila.add(this.processos.remove(0));
-			}
+			fila.add(this.processos.remove(0));
 			chegoProcessos = true; 
 		}
 		if(chegoProcessos){
@@ -84,20 +78,29 @@ public class EscalonamentoPorPrioridades implements Escalonador{
 	
 	// terminar esse método
 	private void trocar(){
-		this.processoDaVez = this.fila.remove(0);
-		this.tempoTotal += this.tempodeTroca;
-		/*boolean teveTroca = false;
-		if(!fila.isEmpty() && fila.get(0).getPrioridade() > processoDaVez.getPrioridade()){
-			fila.add(processoDaVez);
-			processoDaVez = fila.remove(0);
-			tempoTotal += tempodeTroca;
-			
-			teveTroca = true;
+		/*this.processoDaVez = this.fila.remove(0);
+		this.tempoTotal += this.tempodeTroca;*/
+		
+		boolean teveTroca = false;
+		if(processoDaVez.getTempoDeExeculcao() > 0){
+			if(!fila.isEmpty() && fila.get(0).getPrioridade() > processoDaVez.getPrioridade()){
+				fila.add(processoDaVez);
+				processoDaVez = fila.remove(0);
+				tempoTotal += tempodeTroca;			
+				teveTroca = true;
+			}
+		}else{
+			if(!fila.isEmpty()){
+				processoDaVez = fila.remove(0);
+				tempoTotal += tempodeTroca;
+				teveTroca = true;
+			}
 		}
+		
 		
 		if(teveTroca){
 			ordenarPrioridades();
-		}*/
+		}
 	}
 	
 	private void clonarProcessos(ArrayList<Processo> processos){
@@ -112,5 +115,9 @@ public class EscalonamentoPorPrioridades implements Escalonador{
 	
 	private void ordenarPrioridades(){
 		this.fila.sort(new ComparadorPrioridadeDeProcessos());
+	}
+	
+	public int getTempoTotal(){
+		return tempoTotal;
 	}
 }
